@@ -1,4 +1,3 @@
-// Data for animals
 const bigCats = [
   { id: 1, name: "Tiger", species: "Panthera leo", size: 250, location: "Savannah", image: "https://lh7-rt.googleusercontent.com/docsz/AD_4nXciid4uPb9ZBHvt8Gbiif9rcfJE_0T5W4lefoEWm9efDf5derlgXw6WxsPojRamz1_MX5tHP1GzCCuu7ZyY9lFnaSreTSq8baJL9lcKzrkQ6vePktcGGZhb6DD7dbuhcdS-luGPow?key=diMK_80ckKTiDYYhCkLD1Q" },
   { id: 2, name: "Lion", species: "Panthera tigris", size: 300, location: "Forest", image: "https://static.vecteezy.com/system/resources/thumbnails/026/975/383/small_2x/jaguar-in-nature-national-geography-wide-life-animals-ai-generated-photo.jpg" },
@@ -20,17 +19,15 @@ const bigFish = [
   {id : 4, name: "Shark", species: "Selachimorpha", size : 50, location: "Ocean", image: "https://lh7-rt.googleusercontent.com/docsz/AD_4nXf5uRGPuY-b1EhWGGLRVBZHbGdbXt7HqEZWC7BRlIhUlwI3f72-FqkjZ7cfuHjdU3a5UFyejWTS2ztbaj5-Eb0JKspLmkppe7pqcRtDfOfMvjLXVyG2GvywFexBdjyOKMr_Zc0G?key=diMK_80ckKTiDYYhCkLD1Q" }
 ];
 
-// Class to manage animal data and rendering
 class Animals {
   constructor() {
     this.animals = [
-      ...bigCats.map(animal => ({ ...animal, category: 'Big Cats' })),
-      ...bigDogs.map(animal => ({ ...animal, category: 'Dogs' })),
-      ...bigFish.map(animal => ({ ...animal, category: 'Big Fish' })),
+      ...bigCats.map(a => ({ ...a, category: 'Big Cats' })),
+      ...bigDogs.map(a => ({ ...a, category: 'Dogs' })),
+      ...bigFish.map(a => ({ ...a, category: 'Big Fish' })),
     ];
   }
 
-  // html card
   createAnimalCard(animal) {
     return `
       <div class="animal-col">
@@ -55,80 +52,58 @@ class Animals {
     `;
   }
 
-  // render all the aminal 
   renderTables() {
     const animalTablesContainer = document.getElementById('animal-tables');
-    animalTablesContainer.innerHTML = '';
-
-    // Group animals by category
-    const groupedAnimals = this.animals.reduce((acc, animal) => {
-      if (!acc[animal.category]) acc[animal.category] = [];
-      acc[animal.category].push(animal);
+    animalTablesContainer.innerHTML = Object.entries(this.animals.reduce((acc, a) => {
+      if (!acc[a.category]) acc[a.category] = [];
+      acc[a.category].push(a);
       return acc;
-    }, {});
-
-    // Render each category
-    for (const [category, animals] of Object.entries(groupedAnimals)) {
-      const categoryHTML = `
-        <div class="animal-table">
-          <h2>Category: ${category}</h2>
-          <div class="animal-list">
-            ${animals.map(animal => this.createAnimalCard(animal)).join('')}
-          </div>
+    }, {})).map(([category, animals]) => `
+      <div class="animal-table">
+        <h2>Category: ${category}</h2>
+        <div class="animal-list">
+          ${animals.map(a => this.createAnimalCard(a)).join('')}
         </div>
-      `;
-      animalTablesContainer.innerHTML += categoryHTML;
-    }
+      </div>
+    `).join('');
   }
 
-  // Method to handle editing an animal
   editAnimal(id, category) {
-    const animal = this.animals.find(animal => animal.id === id && animal.category === category);
+    const animal = this.animals.find(a => a.id === id && a.category === category);
     if (animal) {
-      document.getElementById('edit-index').value = this.animals.indexOf(animal);
-      document.getElementById('category').value = category;
-      document.getElementById('species').value = animal.species;
-      document.getElementById('name').value = animal.name;
-      document.getElementById('size').value = animal.size;
-      document.getElementById('location').value = animal.location;
-      document.getElementById('image').value = animal.image;
+      const form = document.getElementById('animal-form');
+      form.querySelector('#edit-index').value = this.animals.indexOf(animal);
+      form.querySelector('#category').value = category;
+      form.querySelector('#species').value = animal.species;
+      form.querySelector('#name').value = animal.name;
+      form.querySelector('#size').value = animal.size;
+      form.querySelector('#location').value = animal.location;
+      form.querySelector('#image').value = animal.image;
     }
   }
 
-  // Method to handle deleting an animal
   deleteAnimal(id, category) {
-    const index = this.animals.findIndex(animal => animal.id === id && animal.category === category);
+    const index = this.animals.findIndex(a => a.id === id && a.category === category);
     if (index !== -1) {
       this.animals.splice(index, 1);
       this.renderTables();
     }
   }
 
-  // Method to handle form submission
   handleFormSubmit(event) {
     event.preventDefault();
-    const index = document.getElementById('edit-index').value;
-    const category = document.getElementById('category').value;
-    const species = document.getElementById('species').value;
-    const name = document.getElementById('name').value;
-    const size = document.getElementById('size').value;
-    const location = document.getElementById('location').value;
-    const image = document.getElementById('image').value;
+    const form = event.target;
+    const index = form.querySelector('#edit-index').value;
+    const category = form.querySelector('#category').value;
+    const species = form.querySelector('#species').value;
+    const name = form.querySelector('#name').value;
+    const size = form.querySelector('#size').value;
+    const location = form.querySelector('#location').value;
+    const image = form.querySelector('#image').value;
 
     if (index === '') {
-      // Add new animal
-      const newAnimal = {
-        id: this.animals.length + 1,
-        name,
-        species,
-        size,
-        location,
-        image,
-        category,
-      };
-      this.animals.push(newAnimal);
+      this.animals.push({ id: this.animals.length + 1, name, species, size, location, image, category });
     } else {
-      // Edit existing animal
       const animal = this.animals[index];
       animal.name = name;
       animal.species = species;
@@ -138,14 +113,10 @@ class Animals {
     }
 
     this.renderTables();
-    event.target.reset();
+    form.reset();
   }
 }
-const animals = new Animals();
 
-// Initial render
+const animals = new Animals();
 animals.renderTables();
-// form submission
-document.getElementById('animal-form').addEventListener('submit', (event) => {
-  animals.handleFormSubmit(event);
-});
+document.getElementById('animal-form').addEventListener('submit', (event) => animals.handleFormSubmit(event));
